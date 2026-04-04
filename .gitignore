@@ -1,0 +1,24 @@
+# dependencies
+node_modules/
+
+# build outputs
+dist/
+dist-electron/
+coverage/
+
+# runtime artifacts
+*.session
+*.log
+
+# tool caches
+.vite/
+.tsup/
+
+# package manager logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
