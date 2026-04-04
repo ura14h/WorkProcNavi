@@ -1,4 +1,4 @@
-import { BrowserWindow, clipboard, ipcMain } from "electron";
+import { BrowserWindow, clipboard, ipcMain, shell } from "electron";
 import type { RuntimeRegistry } from "./runtime-registry";
 import { exportEvidence } from "./evidence-writer";
 import { loadDroppedFile } from "./manual-loader";
@@ -48,6 +48,10 @@ export function registerIpcHandlers(
 
   ipcMain.handle("workprocnavi:copyText", async (_event, text: string) => {
     clipboard.writeText(text);
+  });
+
+  ipcMain.handle("workprocnavi:revealPath", async (_event, path: string) => {
+    shell.showItemInFolder(path);
   });
 
   ipcMain.handle("workprocnavi:setCloseGuardEnabled", async (_event, enabled: boolean) => {

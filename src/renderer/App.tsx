@@ -37,6 +37,24 @@ function formatDuration(startedAt: string, completedAt: string | null) {
   return `${hours} 時間 ${minutes} 分`;
 }
 
+function formatLocalDateTime(value: string | null) {
+  if (!value) {
+    return "-";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
 function App() {
   const flashTimerRef = useRef<number | null>(null);
   const [screen, setScreen] = useState<Screen>("home");
@@ -204,6 +222,23 @@ function App() {
         code: "COPY_FAILED",
         message: "コードのコピーに失敗しました。",
         recoverable: true,
+      });
+    }
+  }
+
+  async function handleRevealOutputPath() {
+    if (!completionOutputPath) {
+      return;
+    }
+
+    try {
+      await window.workProcNavi.revealPath(completionOutputPath);
+    } catch (error) {
+      setError({
+        code: "OUTPUT_REVEAL_FAILED",
+        message: "出力先を開けませんでした。",
+        recoverable: true,
+        detail: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -627,31 +662,48 @@ function App() {
         ) : null}
 
         {screen === "completion" && manual && session ? (
-          <section className="completion-screen card">
-            <p className="eyebrow">完了</p>
-            <h2>{manual.title}</h2>
-            <p>エビデンスを出力し、今回の作業を完了しました。</p>
-            <dl className="stats-grid">
-              <div>
-                <dt>開始</dt>
-                <dd>{session.startedAt}</dd>
+          <section className="completion-screen">
+            <div className="completion-summary card">
+              <p className="eyebrow">完了</p>
+              <h2>{manual.title}</h2>
+              <p>エビデンスを出力し、今回の作業を完了しました。</p>
+              <dl className="stats-grid">
+                <div>
+                  <dt>開始</dt>
+                  <dd>{formatLocalDateTime(session.startedAt)}</dd>
+                </div>
+                <div>
+                  <dt>完了</dt>
+                  <dd>{formatLocalDateTime(session.completedAt)}</dd>
+                </div>
+                <div>
+                  <dt>所要時間</dt>
+                  <dd>{formatDuration(session.startedAt, session.completedAt)}</dd>
+                </div>
+              </dl>
+              <div className="output-box">
+                <span>出力先</span>
+                <div className="output-box__path">
+                  <strong>{completionOutputPath}</strong>
+                  <button
+                    type="button"
+                    className="button button--ghost"
+                    disabled={!completionOutputPath}
+                    onClick={() => void handleRevealOutputPath()}
+                  >
+                    開く
+                  </button>
+                </div>
               </div>
-              <div>
-                <dt>完了</dt>
-                <dd>{session.completedAt ?? "-"}</dd>
-              </div>
-              <div>
-                <dt>所要時間</dt>
-                <dd>{formatDuration(session.startedAt, session.completedAt)}</dd>
-              </div>
-            </dl>
-            <div className="output-box">
-              <span>出力先</span>
-              <strong>{completionOutputPath}</strong>
             </div>
-            <button type="button" className="button" onClick={() => resetToHomeState()}>
-              ホームへ戻る
-            </button>
+
+            <div className="card overview-actions">
+              <div className="button-row">
+                <button type="button" className="button" onClick={() => resetToHomeState()}>
+                  ホームへ戻る
+                </button>
+              </div>
+            </div>
           </section>
         ) : null}
       </main>

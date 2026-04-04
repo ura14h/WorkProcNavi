@@ -139,12 +139,18 @@ button {
 }
 
 .overview-screen,
-.execution-screen {
+.execution-screen,
+.completion-screen {
   display: grid;
   gap: 0.75rem;
 }
 
 .overview-screen {
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.completion-screen {
   min-height: 0;
   grid-template-rows: minmax(0, 1fr) auto;
 }
@@ -159,8 +165,13 @@ button {
 }
 
 .overview-summary,
-.overview-phases {
+.overview-phases,
+.completion-summary {
   min-height: 0;
+}
+
+.completion-summary {
+  overflow-y: auto;
 }
 
 .overview-phases {
@@ -315,6 +326,24 @@ button {
   margin: 0;
   font-size: 0.96rem;
   font-weight: 700;
+}
+
+.output-box {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.output-box__path {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.output-box__path strong {
+  flex: 1 1 320px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .button-row,

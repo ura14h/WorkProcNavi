@@ -120,6 +120,7 @@ export type WorkProcNaviApi = {
   exportEvidence: (input: ExportEvidenceInput) => Promise<ExportEvidenceResult>;
   abandonRuntime: (runtimeManualId: string) => Promise<void>;
   copyText: (text: string) => Promise<void>;
+  revealPath: (path: string) => Promise<void>;
   setCloseGuardEnabled: (enabled: boolean) => Promise<void>;
   getPathForFile: (file: File) => string | null;
 };

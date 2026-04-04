@@ -8,6 +8,7 @@ const api: WorkProcNaviApi = {
   abandonRuntime: (runtimeManualId) =>
     ipcRenderer.invoke("workprocnavi:abandonRuntime", runtimeManualId),
   copyText: (text) => ipcRenderer.invoke("workprocnavi:copyText", text),
+  revealPath: (path) => ipcRenderer.invoke("workprocnavi:revealPath", path),
   setCloseGuardEnabled: (enabled) => ipcRenderer.invoke("workprocnavi:setCloseGuardEnabled", enabled),
   getPathForFile: (file) => webUtils.getPathForFile(file),
 };
