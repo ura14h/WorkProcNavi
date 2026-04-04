@@ -424,13 +424,13 @@ type RuntimeState = {
 以下のイベントで保存を試行する。
 
 - 確認項目のチェック変更時
+- ステップジャンプ時
 - フェーズ移動時
 - 未確認項目ありで移動することを承認した時
 - 手動中断時
-- アプリ終了時
-- 完了処理で `completedAt` を確定した時
 
-ステップジャンプのみでは保存しない。
+アプリ終了時は保存を行わず、進行中画面では確認ダイアログを表示したうえでウィンドウを閉じる。
+完了処理では `.log` 出力時に `completedAt` を含むセッション内容を利用するが、完了済み `.session` の保存は行わない。
 
 ### 8.3 保存方式
 
@@ -461,11 +461,11 @@ type RuntimeState = {
 2. セッションに `status = completed` と `completedAt` を設定する
 3. 未確認項目が残っていても、利用者が承認済みであれば完了を許可する
 4. エビデンス出力を行う
-5. 出力成功時に `.session` を削除する
-6. ZIP 展開ディレクトリを削除する
+5. エビデンス出力後に `.session` を削除する
+6. `.session` 削除後に ZIP 展開ディレクトリを削除する
 7. 完了画面を表示する
 
-`.session` 削除失敗時は警告表示のみとし、エビデンス出力自体は成功扱いとする。
+`.session` 削除または ZIP 展開ディレクトリ削除に失敗した場合は、完了遷移を中断し、エビデンス出力失敗として扱う。
 
 ## 9. エビデンス出力設計
 
@@ -666,6 +666,8 @@ type WorkProcNaviApi = {
   abandonRuntime(runtimeManualId: string): Promise<void>;
   copyText(text: string): Promise<void>;
   revealPath(path: string): Promise<void>;
+  setCloseGuardEnabled(enabled: boolean): Promise<void>;
+  getPathForFile(file: File): string | null;
 };
 ```
 
@@ -758,49 +760,50 @@ ZIP 展開先は OS 一時ディレクトリ配下とし、以下の命名規則
 ### 14.3 表示方針
 
 - 開始前エラーはホーム画面のメッセージ領域に表示する
-- 実行中エラーは画面上部トーストと詳細ダイアログで通知する
-- 再試行可能なエラーには `再試行` 導線を表示する
+- 実行中エラーは画面内のエラーバナーで通知する
 - 画像参照失敗は本文内にプレースホルダを表示する
 
 ## 15. モジュール構成
 
 ### 15.1 Main Process 側モジュール
 
-- `main/bootstrap`
+- `src/main.ts`
   Electron 起動、BrowserWindow 生成、終了処理
-- `main/ipc`
+- `src/preload.ts`
+  Renderer に公開する API の定義と IPC ブリッジ
+- `src/main/ipc.ts`
   IPC ハンドラ定義
-- `main/manual-loader`
+- `src/main/manual-loader.ts`
   入力ファイル種別判定、ZIP 展開、Markdown 読込
-- `main/manual-parser`
+- `src/main/manual-parser.ts`
   AST 解析と `ManualDocument` 生成
-- `main/session-store`
+- `src/main/session-store.ts`
   セッション読込・保存・削除
-- `main/evidence-writer`
+- `src/main/evidence-writer.ts`
   `.log` 生成
-- `main/asset-protocol`
+- `src/main/asset-protocol.ts`
   画像カスタムプロトコル提供
-- `main/runtime-registry`
+- `src/main/runtime-registry.ts`
   `runtimeManualId` とソースルートの対応管理
+- `src/main/path-utils.ts`
+  手順書、セッション、エビデンスのファイルパス規則
+- `src/main/errors.ts`
+  アプリ内エラー DTO の生成と整形
 
 ### 15.2 Renderer 側モジュール
 
-- `renderer/app-state`
-  画面状態、Reducer、イベント処理
-- `renderer/screens/home`
-  ホーム画面
-- `renderer/screens/overview`
-  概要画面
-- `renderer/screens/execution`
-  実行画面
-- `renderer/screens/completion`
-  完了画面
-- `renderer/components/progress-bar`
+- `src/renderer/App.tsx`
+  画面状態、イベント処理、ホーム/概要/実行/完了画面の描画
+- `src/renderer/components/ProgressBar.tsx`
   フェーズ進捗バー
-- `renderer/components/render-blocks`
+- `src/renderer/components/RenderBlocks.tsx`
   本文ブロック描画
-- `renderer/components/confirm-checklist`
+- `src/renderer/components/ConfirmChecklist.tsx`
   確認項目表示
+- `src/renderer/main.tsx`
+  Renderer のエントリポイント
+- `src/renderer/styles.css`
+  アプリ全体のスタイル定義
 
 ## 16. テスト観点
 
