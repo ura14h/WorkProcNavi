@@ -481,38 +481,43 @@ function App() {
 
         {screen === "overview" && manual ? (
           <section className="overview-screen">
-            <div className="card">
-              <p className="eyebrow">概要</p>
-              <h2>{manual.title}</h2>
-              <dl className="stats-grid">
-                <div>
-                  <dt>フェーズ</dt>
-                  <dd>{manual.totals.phaseCount}</dd>
-                </div>
-                <div>
-                  <dt>ステップ</dt>
-                  <dd>{manual.totals.stepCount}</dd>
-                </div>
-                <div>
-                  <dt>確認項目</dt>
-                  <dd>{manual.totals.confirmItemCount}</dd>
-                </div>
-              </dl>
-              <RenderBlocks blocks={manual.overviewBlocks} onCopyCode={handleCopyCode} />
+            <div className="overview-body">
+              <div className="card overview-summary">
+                <p className="eyebrow">概要</p>
+                <h2>{manual.title}</h2>
+                <dl className="stats-grid">
+                  <div>
+                    <dt>フェーズ</dt>
+                    <dd>{manual.totals.phaseCount}</dd>
+                  </div>
+                  <div>
+                    <dt>ステップ</dt>
+                    <dd>{manual.totals.stepCount}</dd>
+                  </div>
+                  <div>
+                    <dt>確認項目</dt>
+                    <dd>{manual.totals.confirmItemCount}</dd>
+                  </div>
+                </dl>
+                <RenderBlocks blocks={manual.overviewBlocks} onCopyCode={handleCopyCode} />
+              </div>
+
+              <div className="card overview-phases">
+                <h3>フェーズ一覧</h3>
+                <ol className="phase-outline">
+                  {manual.phases.map((phase) => (
+                    <li key={phase.phaseId}>
+                      <strong>{phase.title}</strong>
+                      <span>
+                        {phase.totals.stepCount} ステップ / {phase.totals.confirmItemCount} 確認項目
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             </div>
 
-            <div className="card">
-              <h3>フェーズ一覧</h3>
-              <ol className="phase-outline">
-                {manual.phases.map((phase) => (
-                  <li key={phase.phaseId}>
-                    <strong>{phase.title}</strong>
-                    <span>
-                      {phase.totals.stepCount} ステップ / {phase.totals.confirmItemCount} 確認項目
-                    </span>
-                  </li>
-                ))}
-              </ol>
+            <div className="card overview-actions">
               <div className="button-row">
                 <button type="button" className="button button--ghost" onClick={() => void handleBackToHome()}>
                   戻る
