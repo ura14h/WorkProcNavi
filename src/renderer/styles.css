@@ -318,16 +318,27 @@ button {
 }
 
 .button-row,
-.phase-footer {
+.phase-footer,
+.phase-footer__actions {
   display: flex;
   gap: 0.6rem;
-  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .phase-footer {
   position: sticky;
   bottom: 0;
   z-index: 3;
+  align-items: center;
+}
+
+.button-row {
+  justify-content: flex-end;
+}
+
+.phase-footer__actions {
+  margin-left: auto;
+  justify-content: flex-end;
 }
 
 .button-stack {

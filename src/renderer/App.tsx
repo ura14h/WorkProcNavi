@@ -556,13 +556,6 @@ function App() {
                     >
                       次のステップ
                     </button>
-                    <button
-                      type="button"
-                      className="button button--ghost"
-                      onClick={() => void handleSuspend()}
-                    >
-                      中断して保存
-                    </button>
                   </div>
                 </aside>
 
@@ -601,25 +594,34 @@ function App() {
             <footer className="phase-footer card">
               <button
                 type="button"
-                className="button button--ghost"
-                disabled={currentPhase.index === 1}
-                onClick={() => void handleMoveBackPhase()}
+                className="button button--ghost phase-footer__suspend"
+                onClick={() => void handleSuspend()}
               >
-                戻る
+                保存して中断
               </button>
-              {currentPhase.index < manual.phases.length ? (
+              <div className="phase-footer__actions">
                 <button
                   type="button"
-                  className={isCurrentPhaseFullyConfirmed ? "button" : "button button--ghost"}
-                  onClick={requestAdvance}
+                  className="button button--ghost"
+                  disabled={currentPhase.index === 1}
+                  onClick={() => void handleMoveBackPhase()}
                 >
-                  次へ
+                  戻る
                 </button>
-              ) : (
-                <button type="button" className="button" onClick={requestComplete}>
-                  完了
-                </button>
-              )}
+                {currentPhase.index < manual.phases.length ? (
+                  <button
+                    type="button"
+                    className={isCurrentPhaseFullyConfirmed ? "button" : "button button--ghost"}
+                    onClick={requestAdvance}
+                  >
+                    次へ
+                  </button>
+                ) : (
+                  <button type="button" className="button" onClick={requestComplete}>
+                    完了
+                  </button>
+                )}
+              </div>
             </footer>
           </section>
         ) : null}
