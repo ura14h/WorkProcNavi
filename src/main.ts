@@ -18,10 +18,10 @@ function createMainWindow() {
   const preloadPath = path.join(__dirname, "preload.cjs");
 
   mainWindow = new BrowserWindow({
-    width: 1180,
-    height: 860,
-    minWidth: 760,
-    minHeight: 640,
+    width: 920,
+    height: 700,
+    minWidth: 520,
+    minHeight: 420,
     backgroundColor: "#f6efe5",
     title: "作業手順ナビ",
     webPreferences: {

@@ -532,9 +532,6 @@ function App() {
             <div className="execution-body">
               <div className="execution-layout">
                 <aside className="execution-sidebar card">
-                  <p className="eyebrow">現在フェーズ</p>
-                  <h2>{currentPhase.title}</h2>
-                  <p>{currentPhase.totals.stepCount} ステップ</p>
                   <div className="button-stack">
                     <button
                       type="button"
@@ -577,7 +574,7 @@ function App() {
                         <span
                           className={step.stepId === flashingStepId ? "step-section__index is-flashing" : "step-section__index"}
                         >
-                          ステップ {step.index}
+                          ステップ {step.index}/{currentPhase.steps.length}
                         </span>
                         <h3>{step.title}</h3>
                       </div>
