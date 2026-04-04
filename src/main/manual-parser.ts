@@ -107,6 +107,10 @@ function renderSlice(tokens: Token[]) {
   return sanitize(markdown.renderer.render(tokens, markdown.options, {}));
 }
 
+function renderInline(sourceMarkdown: string) {
+  return sanitize(markdown.renderInline(sourceMarkdown));
+}
+
 function renderBlocks(
   sourceMarkdown: string,
   runtimeManualId: string,
@@ -335,6 +339,7 @@ export function parseManualDocument(input: ParseInput): ManualDocument {
           confirmItemId: "",
           index: 0,
           text: confirmMatch[2].trim(),
+          html: renderInline(confirmMatch[2].trim()),
         });
         continue;
       }

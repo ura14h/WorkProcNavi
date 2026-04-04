@@ -28,8 +28,18 @@ const manual: ManualDocument = {
           title: "電源を確認する",
           contentBlocks: [],
           confirmItems: [
-            { confirmItemId: "phase-001-step-001-check-001", index: 1, text: "電源が切れている" },
-            { confirmItemId: "phase-001-step-001-check-002", index: 2, text: "ケーブルに問題がない" },
+            {
+              confirmItemId: "phase-001-step-001-check-001",
+              index: 1,
+              text: "電源が切れている",
+              html: "電源が切れている",
+            },
+            {
+              confirmItemId: "phase-001-step-001-check-002",
+              index: 2,
+              text: "ケーブルに問題がない",
+              html: "ケーブルに問題がない",
+            },
           ],
         },
       ],

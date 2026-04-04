@@ -6,7 +6,10 @@ import { deleteSession, saveSession } from "./session-store";
 import { fromUnknown } from "./errors";
 import type { ExportEvidenceInput, SaveSessionInput } from "../shared/types";
 
-export function registerIpcHandlers(runtimeRegistry: RuntimeRegistry) {
+export function registerIpcHandlers(
+  runtimeRegistry: RuntimeRegistry,
+  options: { setCloseGuardEnabled: (enabled: boolean) => void },
+) {
   ipcMain.handle("workprocnavi:loadDroppedFile", async (_event, filePath: string) => {
     return loadDroppedFile(filePath, runtimeRegistry);
   });
@@ -45,6 +48,10 @@ export function registerIpcHandlers(runtimeRegistry: RuntimeRegistry) {
 
   ipcMain.handle("workprocnavi:copyText", async (_event, text: string) => {
     clipboard.writeText(text);
+  });
+
+  ipcMain.handle("workprocnavi:setCloseGuardEnabled", async (_event, enabled: boolean) => {
+    options.setCloseGuardEnabled(enabled);
   });
 
   ipcMain.on("workprocnavi:focusWindow", (event) => {

@@ -6,8 +6,27 @@ type RenderBlocksProps = {
 };
 
 export function RenderBlocks({ blocks, onCopyCode }: RenderBlocksProps) {
+  function handleInlineCodeClick(event: React.MouseEvent<HTMLDivElement>) {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const codeElement = target.closest("code");
+    if (!codeElement || codeElement.closest("pre")) {
+      return;
+    }
+
+    const codeText = codeElement.textContent;
+    if (!codeText) {
+      return;
+    }
+
+    void onCopyCode(codeText);
+  }
+
   return (
-    <div className="render-blocks">
+    <div className="render-blocks" onClick={handleInlineCodeClick}>
       {blocks.map((block, index) => {
         const key = `${block.type}-${index}`;
 

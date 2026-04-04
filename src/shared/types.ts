@@ -14,6 +14,7 @@ export type ConfirmItem = {
   confirmItemId: string;
   index: number;
   text: string;
+  html: string;
 };
 
 export type Step = {
@@ -119,5 +120,6 @@ export type WorkProcNaviApi = {
   exportEvidence: (input: ExportEvidenceInput) => Promise<ExportEvidenceResult>;
   abandonRuntime: (runtimeManualId: string) => Promise<void>;
   copyText: (text: string) => Promise<void>;
+  setCloseGuardEnabled: (enabled: boolean) => Promise<void>;
   getPathForFile: (file: File) => string | null;
 };

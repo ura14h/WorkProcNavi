@@ -38,6 +38,7 @@ function formatDuration(startedAt: string, completedAt: string | null) {
 }
 
 function App() {
+  const flashTimerRef = useRef<number | null>(null);
   const [screen, setScreen] = useState<Screen>("home");
   const [manual, setManual] = useState<ManualDocument | null>(null);
   const [session, setSession] = useState<SessionData | null>(null);
@@ -45,6 +46,7 @@ function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [completionOutputPath, setCompletionOutputPath] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [flashingStepId, setFlashingStepId] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const stepRefs = useRef<Record<string, HTMLElement | null>>({});
 
@@ -56,6 +58,19 @@ function App() {
     const timer = window.setTimeout(() => setToast(null), 2400);
     return () => window.clearTimeout(timer);
   }, [toast]);
+
+  useEffect(() => {
+    return () => {
+      if (flashTimerRef.current) {
+        window.clearTimeout(flashTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const closeGuardEnabled = screen === "execution" && session?.status === "in_progress";
+    void window.workProcNavi.setCloseGuardEnabled(closeGuardEnabled);
+  }, [screen, session?.status]);
 
   const checkedItemIds = useMemo(() => new Set(session?.checkedItemIds ?? []), [session]);
   const currentPhase = useMemo(() => {
@@ -216,6 +231,18 @@ function App() {
     });
   }
 
+  function flashStepLabel(stepId: string) {
+    if (flashTimerRef.current) {
+      window.clearTimeout(flashTimerRef.current);
+    }
+
+    setFlashingStepId(stepId);
+    flashTimerRef.current = window.setTimeout(() => {
+      setFlashingStepId((current) => (current === stepId ? null : current));
+      flashTimerRef.current = null;
+    }, 1400);
+  }
+
   async function handleJumpStep(direction: -1 | 1) {
     if (!session || !currentPhase) {
       return;
@@ -233,6 +260,7 @@ function App() {
     const saved = await persistSession(nextSession);
     if (saved) {
       scrollToStep(targetStep);
+      flashStepLabel(targetStep.stepId);
     }
   }
 
@@ -401,12 +429,13 @@ function App() {
     };
   }, [manual, currentPhase, checkedItemIds]);
 
+  const isCurrentPhaseFullyConfirmed = (executionSummary?.pendingCount ?? 0) === 0;
+
   return (
     <div className="app-shell">
       <header className="topbar">
         <div>
-          <p className="eyebrow">作業手順ナビ</p>
-          <h1>WorkProcNavi</h1>
+          <h1>作業手順ナビ</h1>
         </div>
         {screen === "execution" && executionSummary ? (
           <div className="topbar__status">
@@ -496,60 +525,73 @@ function App() {
 
         {screen === "execution" && manual && session && currentPhase ? (
           <section className="execution-screen">
-            <ProgressBar manual={manual} currentPhaseId={currentPhase.phaseId} />
+            <div className="execution-toprail">
+              <ProgressBar manual={manual} currentPhaseId={currentPhase.phaseId} />
+            </div>
 
-            <div className="execution-layout">
-              <aside className="execution-sidebar card">
-                <p className="eyebrow">現在フェーズ</p>
-                <h2>{currentPhase.title}</h2>
-                <p>{currentPhase.totals.stepCount} ステップ</p>
-                <div className="button-stack">
-                  <button
-                    type="button"
-                    className="button button--ghost"
-                    disabled={currentStepIndex === 0}
-                    onClick={() => void handleJumpStep(-1)}
-                  >
-                    前のステップ
-                  </button>
-                  <button
-                    type="button"
-                    className="button button--ghost"
-                    disabled={currentStepIndex >= currentPhase.steps.length - 1}
-                    onClick={() => void handleJumpStep(1)}
-                  >
-                    次のステップ
-                  </button>
-                  <button type="button" className="button button--ghost" onClick={() => void handleSuspend()}>
-                    中断して保存
-                  </button>
-                </div>
-              </aside>
+            <div className="execution-body">
+              <div className="execution-layout">
+                <aside className="execution-sidebar card">
+                  <p className="eyebrow">現在フェーズ</p>
+                  <h2>{currentPhase.title}</h2>
+                  <p>{currentPhase.totals.stepCount} ステップ</p>
+                  <div className="button-stack">
+                    <button
+                      type="button"
+                      className="button button--ghost"
+                      disabled={currentStepIndex === 0}
+                      onClick={() => void handleJumpStep(-1)}
+                    >
+                      前のステップ
+                    </button>
+                    <button
+                      type="button"
+                      className="button button--ghost"
+                      disabled={currentStepIndex >= currentPhase.steps.length - 1}
+                      onClick={() => void handleJumpStep(1)}
+                    >
+                      次のステップ
+                    </button>
+                    <button
+                      type="button"
+                      className="button button--ghost"
+                      onClick={() => void handleSuspend()}
+                    >
+                      中断して保存
+                    </button>
+                  </div>
+                </aside>
 
-              <article className="execution-main card">
-                <RenderBlocks blocks={currentPhase.introBlocks} onCopyCode={handleCopyCode} />
+                <article className="execution-main card">
+                  <RenderBlocks blocks={currentPhase.introBlocks} onCopyCode={handleCopyCode} />
 
-                {currentPhase.steps.map((step) => (
-                  <section
-                    className={`step-section ${step.stepId === session.currentStepId ? "is-current" : ""}`}
-                    key={step.stepId}
-                    ref={(element) => {
-                      stepRefs.current[step.stepId] = element;
-                    }}
-                  >
-                    <div className="step-section__header">
-                      <span>Step {step.index}</span>
-                      <h3>{step.title}</h3>
-                    </div>
-                    <RenderBlocks blocks={step.contentBlocks} onCopyCode={handleCopyCode} />
-                    <ConfirmChecklist
-                      items={step.confirmItems}
-                      checkedItemIds={checkedItemIds}
-                      onToggle={(confirmItemId) => void handleToggleConfirm(confirmItemId)}
-                    />
-                  </section>
-                ))}
-              </article>
+                  {currentPhase.steps.map((step) => (
+                    <section
+                      className={`step-section ${step.stepId === session.currentStepId ? "is-current" : ""}`}
+                      key={step.stepId}
+                      ref={(element) => {
+                        stepRefs.current[step.stepId] = element;
+                      }}
+                    >
+                      <div className="step-section__header">
+                        <span
+                          className={step.stepId === flashingStepId ? "step-section__index is-flashing" : "step-section__index"}
+                        >
+                          ステップ {step.index}
+                        </span>
+                        <h3>{step.title}</h3>
+                      </div>
+                      <RenderBlocks blocks={step.contentBlocks} onCopyCode={handleCopyCode} />
+                      <ConfirmChecklist
+                        items={step.confirmItems}
+                        checkedItemIds={checkedItemIds}
+                        onToggle={(confirmItemId) => void handleToggleConfirm(confirmItemId)}
+                        onCopyCode={handleCopyCode}
+                      />
+                    </section>
+                  ))}
+                </article>
+              </div>
             </div>
 
             <footer className="phase-footer card">
@@ -562,7 +604,11 @@ function App() {
                 戻る
               </button>
               {currentPhase.index < manual.phases.length ? (
-                <button type="button" className="button" onClick={requestAdvance}>
+                <button
+                  type="button"
+                  className={isCurrentPhaseFullyConfirmed ? "button" : "button button--ghost"}
+                  onClick={requestAdvance}
+                >
                   次へ
                 </button>
               ) : (
