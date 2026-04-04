@@ -1,0 +1,69 @@
+.render-blocks h1,
+.render-blocks h2,
+.render-blocks h3,
+.render-blocks h4,
+.render-blocks h5,
+.render-blocks h6 {
+  margin: 1.2rem 0 0.6rem;
+  color: #1f2d2d;
+  line-height: 1.3;
+}
+
+.render-blocks p,
+.render-blocks ul,
+.render-blocks ol,
+.render-blocks blockquote,
+.render-blocks table {
+  margin: 0.8rem 0;
+}
+
+.render-blocks p,
+.render-blocks li,
+.render-blocks td,
+.render-blocks th {
+  line-height: 1.8;
+}
+
+.render-blocks code {
+  font-family: "SF Mono", "Monaco", "Cascadia Code", monospace;
+}
+
+.render-blocks :not(pre) > code {
+  padding: 0.12rem 0.38rem;
+  border-radius: 0.4rem;
+  background: #f2e7d7;
+  color: #8b4d20;
+}
+
+.render-blocks blockquote {
+  padding: 0.85rem 1rem;
+  border-left: 4px solid #d89a66;
+  background: #fff7ee;
+  color: #4c5f5f;
+}
+
+.render-blocks table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+}
+
+.render-blocks th,
+.render-blocks td {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid #ecd6bf;
+}
+
+.render-blocks th {
+  background: #f4ecdf;
+}
+
+.render-blocks hr {
+  border: 0;
+  border-top: 1px solid #e7d5c2;
+  margin: 1.2rem 0;
+}
+
+.render-blocks a {
+  color: #0b756d;
+}
