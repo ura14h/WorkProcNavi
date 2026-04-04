@@ -16,6 +16,7 @@ function createMainWindow() {
   allowWindowClose = false;
   closeGuardEnabled = false;
   const preloadPath = path.join(__dirname, "preload.cjs");
+  const rendererEntryPath = path.resolve(__dirname, "..", "dist", "index.html");
 
   mainWindow = new BrowserWindow({
     width: 920,
@@ -38,7 +39,7 @@ function createMainWindow() {
     void mainWindow.loadURL(devServerUrl);
     mainWindow.webContents.openDevTools({ mode: "detach" });
   } else {
-    void mainWindow.loadFile(path.join(process.cwd(), "dist", "index.html"));
+    void mainWindow.loadFile(rendererEntryPath);
   }
 
   mainWindow.on("close", async (event) => {

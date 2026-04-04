@@ -4,14 +4,58 @@
   "private": true,
   "type": "module",
   "main": "dist-electron/main.js",
+  "productName": "WorkProcNavi",
   "scripts": {
-    "dev": "concurrently -k \"vite\" \"tsup src/main.ts --format esm --out-dir dist-electron --watch\" \"tsup src/preload.ts --format cjs --out-dir dist-electron --watch\" \"wait-on tcp:5173 dist-electron/main.js dist-electron/preload.cjs && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .\"",
-    "build": "tsup src/main.ts --format esm --out-dir dist-electron && tsup src/preload.ts --format cjs --out-dir dist-electron && vite build",
+    "dev": "concurrently -k \"tsup src/main.ts --format esm --platform node --external electron --out-dir dist-electron --watch\" \"tsup src/preload.ts --format cjs --platform node --external electron --out-dir dist-electron --watch\" \"vite\" \"wait-on tcp:5173 dist-electron/main.js dist-electron/preload.cjs && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .\"",
+    "build": "tsup src/main.ts --format esm --platform node --external electron --out-dir dist-electron && tsup src/preload.ts --format cjs --platform node --external electron --out-dir dist-electron && vite build",
+    "dist:mac": "npm run build && electron-builder --mac dmg zip --arm64 --publish never",
+    "dist:portable": "npm run build && electron-builder --win portable --x64 --publish never",
     "preview": "vite preview",
     "test": "vitest run"
   },
+  "build": {
+    "appId": "com.ishiura.workprocnavi",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-mac-${arch}.${ext}",
+      "identity": null
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-portable-${arch}.${ext}",
+      "signAndEditExecutable": false
+    }
+  },
   "dependencies": {
-    "electron": "^37.0.0",
     "jszip": "^3.10.1",
     "markdown-it": "^14.1.0",
     "react": "^19.0.0",
@@ -26,6 +70,8 @@
     "@vitejs/plugin-react": "^5.0.0",
     "concurrently": "^9.2.0",
     "cross-env": "^7.0.3",
+    "electron": "^37.0.0",
+    "electron-builder": "^26.0.12",
     "tsup": "^8.5.0",
     "typescript": "^5.9.0",
     "vite": "^7.0.0",
