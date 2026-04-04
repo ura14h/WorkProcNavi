@@ -11,7 +11,7 @@ const runtimeRegistry = new RuntimeRegistry();
 let mainWindow: BrowserWindow | null = null;
 
 function createMainWindow() {
-  const preloadPath = path.join(__dirname, "preload.js");
+  const preloadPath = path.join(__dirname, "preload.cjs");
 
   mainWindow = new BrowserWindow({
     width: 1180,

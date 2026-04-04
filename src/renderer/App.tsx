@@ -133,6 +133,14 @@ function App() {
       setSession(result.session);
       setCompletionOutputPath(null);
       setScreen("overview");
+    } catch (error) {
+      setError({
+        code: "INPUT_READ_FAILED",
+        message: "入力ファイルの処理に失敗しました。",
+        recoverable: true,
+        detail: error instanceof Error ? error.message : String(error),
+      });
+      resetToHomeState();
     } finally {
       setIsBusy(false);
     }
