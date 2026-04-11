@@ -49,7 +49,7 @@ npm run build
 
 ```bash
 npm run dist:mac
-npm run dist:portable
+npm run dist:win:portable
 ```
 
 ## Usage

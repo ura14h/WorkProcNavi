@@ -10,7 +10,8 @@
     "dev": "concurrently -k \"tsup src/main.ts --format esm --platform node --external electron --out-dir dist-electron --watch\" \"tsup src/preload.ts --format cjs --platform node --external electron --out-dir dist-electron --watch\" \"vite\" \"wait-on tcp:5173 dist-electron/main.js dist-electron/preload.cjs && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .\"",
     "build": "tsup src/main.ts --format esm --platform node --external electron --out-dir dist-electron && tsup src/preload.ts --format cjs --platform node --external electron --out-dir dist-electron && vite build",
     "dist:mac": "npm run build && electron-builder --mac dmg zip --arm64 --publish never",
-    "dist:portable": "npm run build && electron-builder --win portable --x64 --publish never",
+    "dist:win:portable": "npm run build && electron-builder --win portable --x64 --publish never",
+    "dist:portable": "npm run dist:win:portable",
     "preview": "vite preview",
     "test": "vitest run"
   },
@@ -52,7 +53,7 @@
           ]
         }
       ],
-      "artifactName": "${productName}-${version}-portable-${arch}.${ext}",
+      "artifactName": "${productName}-${version}-win-portable-${arch}.${ext}",
       "signAndEditExecutable": false
     }
   },
