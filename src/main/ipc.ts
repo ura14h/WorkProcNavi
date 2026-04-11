@@ -1,10 +1,11 @@
 import { BrowserWindow, clipboard, ipcMain, shell } from "electron";
 import type { RuntimeRegistry } from "./runtime-registry";
 import { exportEvidence } from "./evidence-writer";
+import { openManualLink } from "./link-opener";
 import { loadDroppedFile } from "./manual-loader";
 import { deleteSession, saveSession } from "./session-store";
 import { fromUnknown } from "./errors";
-import type { ExportEvidenceInput, SaveSessionInput } from "../shared/types";
+import type { ExportEvidenceInput, OpenManualLinkInput, SaveSessionInput } from "../shared/types";
 
 export function registerIpcHandlers(
   runtimeRegistry: RuntimeRegistry,
@@ -48,6 +49,10 @@ export function registerIpcHandlers(
 
   ipcMain.handle("workprocnavi:copyText", async (_event, text: string) => {
     clipboard.writeText(text);
+  });
+
+  ipcMain.handle("workprocnavi:openManualLink", async (_event, input: OpenManualLinkInput) => {
+    return openManualLink(input);
   });
 
   ipcMain.handle("workprocnavi:revealPath", async (_event, path: string) => {

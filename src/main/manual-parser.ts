@@ -26,6 +26,7 @@ const markdown = new MarkdownIt({
   linkify: false,
   breaks: false,
 });
+markdown.validateLink = () => true;
 
 function sanitize(html: string) {
   return sanitizeHtml(html, {
@@ -57,6 +58,7 @@ function sanitize(html: string) {
       td: ["align"],
       code: ["class"],
     },
+    allowedSchemes: ["http", "https", "file"],
     transformTags: {
       a: sanitizeHtml.simpleTransform("a", {
         target: "_blank",

@@ -231,6 +231,13 @@ button {
   padding-right: 0.7rem;
 }
 
+.execution-main-frame {
+  position: relative;
+  align-self: stretch;
+  min-height: 0;
+  height: 100%;
+}
+
 .execution-main.card {
   padding-right: 0.2rem;
 }
@@ -608,10 +615,55 @@ button {
   right: 1rem;
   bottom: 1rem;
   max-width: min(480px, calc(100vw - 3rem));
-  padding: 0.8rem 0.9rem;
+  max-height: min(16rem, calc(100vh - 3rem));
+  overflow-wrap: anywhere;
+  padding: 0.75rem 0.8rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  font-size: 0.92rem;
+  z-index: 5;
+}
+
+.message-banner__body {
   display: grid;
   gap: 0.3rem;
-  font-size: 0.92rem;
+  min-width: 0;
+  max-height: calc(min(16rem, calc(100vh - 3rem)) - 1.5rem);
+  overflow: auto;
+}
+
+.message-banner__close {
+  appearance: none;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  background: rgba(165, 58, 47, 0.12);
+  color: #8d2e24;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.message-banner__close:hover {
+  background: rgba(165, 58, 47, 0.2);
+}
+
+.message-banner--execution-main {
+  position: absolute;
+  right: 0.9rem;
+  bottom: 0.9rem;
+  max-width: min(480px, calc(100% - 1.8rem));
+  max-height: min(16rem, calc(100% - 1.8rem));
+}
+
+.message-banner--execution-main .message-banner__body {
+  max-height: calc(min(16rem, calc(100% - 1.8rem)) - 1.5rem);
 }
 
 .message-banner--error {
@@ -682,8 +734,18 @@ button {
     padding-right: 0;
   }
 
+  .execution-main-frame {
+    min-height: 320px;
+  }
+
   .execution-main.card {
     padding-right: 1.35rem;
+  }
+
+  .message-banner--execution-main {
+    right: 0.65rem;
+    bottom: 0.65rem;
+    max-width: calc(100% - 1.3rem);
   }
 
   .app-shell {

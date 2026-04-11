@@ -36,4 +36,32 @@ describe("parseManualDocument", () => {
       }),
     ).toThrowError();
   });
+
+  it("keeps supported manual links and strips unsupported protocols", () => {
+    const manual = parseManualDocument({
+      markdown: [
+        "# title",
+        "",
+        "## phase",
+        "",
+        "### step",
+        "",
+        "[外部](https://example.com/) [ファイル](file:///tmp/sample.txt) [危険](javascript:alert(1))",
+        "",
+        "- [ ] 確認する",
+      ].join("\n"),
+      runtimeManualId: "runtime-test",
+      sourcePath: "/tmp/manual.md",
+      sourceRootPath: "/tmp",
+      sourceType: "markdown",
+    });
+
+    const paragraph = manual.phases[0]?.steps[0]?.contentBlocks[0];
+    expect(paragraph?.type).toBe("paragraph");
+    if (paragraph?.type === "paragraph") {
+      expect(paragraph.html).toContain('href="https://example.com/"');
+      expect(paragraph.html).toContain('href="file:///tmp/sample.txt"');
+      expect(paragraph.html).not.toContain("javascript:");
+    }
+  });
 });

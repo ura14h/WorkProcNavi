@@ -3,12 +3,24 @@ import type { RenderBlock } from "../../shared/types";
 type RenderBlocksProps = {
   blocks: RenderBlock[];
   onCopyCode: (code: string) => void;
+  onOpenLink: (href: string) => void;
 };
 
-export function RenderBlocks({ blocks, onCopyCode }: RenderBlocksProps) {
-  function handleInlineCodeClick(event: React.MouseEvent<HTMLDivElement>) {
+export function RenderBlocks({ blocks, onCopyCode, onOpenLink }: RenderBlocksProps) {
+  function handleBlockClick(event: React.MouseEvent<HTMLDivElement>) {
     const target = event.target;
     if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const linkElement = target.closest("a");
+    if (linkElement) {
+      const href = linkElement.getAttribute("href");
+      if (href) {
+        event.preventDefault();
+        event.stopPropagation();
+        void onOpenLink(href);
+      }
       return;
     }
 
@@ -26,7 +38,7 @@ export function RenderBlocks({ blocks, onCopyCode }: RenderBlocksProps) {
   }
 
   return (
-    <div className="render-blocks" onClick={handleInlineCodeClick}>
+    <div className="render-blocks" onClick={handleBlockClick}>
       {blocks.map((block, index) => {
         const key = `${block.type}-${index}`;
 

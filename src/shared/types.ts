@@ -114,12 +114,23 @@ export type ExportEvidenceResult =
   | { ok: true; outputPath: string }
   | { ok: false; error: AppError };
 
+export type ManualLinkKind = "externalUrl" | "fileDirectory" | "fileItem";
+
+export type OpenManualLinkInput = {
+  href: string;
+};
+
+export type OpenManualLinkResult =
+  | { ok: true; kind: ManualLinkKind; openedPath?: string }
+  | { ok: false; error: AppError };
+
 export type WorkProcNaviApi = {
   loadDroppedFile: (filePath: string) => Promise<LoadManualResult>;
   saveSession: (input: SaveSessionInput) => Promise<SaveSessionResult>;
   exportEvidence: (input: ExportEvidenceInput) => Promise<ExportEvidenceResult>;
   abandonRuntime: (runtimeManualId: string) => Promise<void>;
   copyText: (text: string) => Promise<void>;
+  openManualLink: (input: OpenManualLinkInput) => Promise<OpenManualLinkResult>;
   revealPath: (path: string) => Promise<void>;
   setCloseGuardEnabled: (enabled: boolean) => Promise<void>;
   getPathForFile: (file: File) => string | null;

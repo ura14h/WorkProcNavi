@@ -4,6 +4,7 @@ declare module "sanitize-html" {
   type SanitizeHtmlOptions = {
     allowedTags?: string[];
     allowedAttributes?: Record<string, string[]>;
+    allowedSchemes?: string[];
     transformTags?: Record<string, unknown>;
   };
 

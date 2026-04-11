@@ -5,6 +5,7 @@ type ConfirmChecklistProps = {
   checkedItemIds: Set<string>;
   onToggle: (confirmItemId: string) => void;
   onCopyCode: (code: string) => void;
+  onOpenLink: (href: string) => void;
 };
 
 export function ConfirmChecklist({
@@ -12,10 +13,22 @@ export function ConfirmChecklist({
   checkedItemIds,
   onToggle,
   onCopyCode,
+  onOpenLink,
 }: ConfirmChecklistProps) {
-  function handleInlineCodeClick(event: React.MouseEvent<HTMLUListElement>) {
+  function handleChecklistClick(event: React.MouseEvent<HTMLUListElement>) {
     const target = event.target;
     if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const linkElement = target.closest("a");
+    if (linkElement) {
+      const href = linkElement.getAttribute("href");
+      if (href) {
+        event.preventDefault();
+        event.stopPropagation();
+        void onOpenLink(href);
+      }
       return;
     }
 
@@ -30,7 +43,7 @@ export function ConfirmChecklist({
   }
 
   return (
-    <ul className="confirm-checklist" onClick={handleInlineCodeClick}>
+    <ul className="confirm-checklist" onClick={handleChecklistClick}>
       {items.map((item) => {
         const checked = checkedItemIds.has(item.confirmItemId);
         return (

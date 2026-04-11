@@ -55,6 +55,35 @@ function formatLocalDateTime(value: string | null) {
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
+function ErrorBanner({
+  error,
+  inExecutionMain = false,
+  onClose,
+}: {
+  error: AppError;
+  inExecutionMain?: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className={`message-banner message-banner--error ${inExecutionMain ? "message-banner--execution-main" : ""}`}
+    >
+      <div className="message-banner__body">
+        <strong>{error.message}</strong>
+        {error.detail ? <span>{error.detail}</span> : null}
+      </div>
+      <button
+        type="button"
+        className="message-banner__close"
+        aria-label="エラーメッセージを閉じる"
+        onClick={onClose}
+      >
+        ×
+      </button>
+    </div>
+  );
+}
+
 function App() {
   const flashTimerRef = useRef<number | null>(null);
   const [screen, setScreen] = useState<Screen>("home");
@@ -221,6 +250,31 @@ function App() {
       setError({
         code: "COPY_FAILED",
         message: "コードのコピーに失敗しました。",
+        recoverable: true,
+      });
+    }
+  }
+
+  async function handleOpenManualLink(href: string) {
+    try {
+      const result = await window.workProcNavi.openManualLink({ href });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      setError(null);
+      if (result.kind === "externalUrl") {
+        setToast("外部ブラウザで開きました。");
+      } else if (result.kind === "fileDirectory") {
+        setToast("フォルダを開きました。");
+      } else {
+        setToast("ファイルの場所を表示しました。");
+      }
+    } catch (error) {
+      setError({
+        code: "LINK_OPEN_FAILED",
+        message: "リンクを開けませんでした。",
         recoverable: true,
       });
     }
@@ -534,7 +588,11 @@ function App() {
                     <dd>{manual.totals.confirmItemCount}</dd>
                   </div>
                 </dl>
-                <RenderBlocks blocks={manual.overviewBlocks} onCopyCode={handleCopyCode} />
+                <RenderBlocks
+                  blocks={manual.overviewBlocks}
+                  onCopyCode={handleCopyCode}
+                  onOpenLink={handleOpenManualLink}
+                />
               </div>
 
               <div className="card overview-phases">
@@ -594,35 +652,49 @@ function App() {
                   </div>
                 </aside>
 
-                <article className="execution-main card">
-                  <RenderBlocks blocks={currentPhase.introBlocks} onCopyCode={handleCopyCode} />
+                <div className="execution-main-frame">
+                  <article className="execution-main card">
+                    <RenderBlocks
+                      blocks={currentPhase.introBlocks}
+                      onCopyCode={handleCopyCode}
+                      onOpenLink={handleOpenManualLink}
+                    />
 
-                  {currentPhase.steps.map((step) => (
-                    <section
-                      className={`step-section ${step.stepId === session.currentStepId ? "is-current" : ""}`}
-                      key={step.stepId}
-                      ref={(element) => {
-                        stepRefs.current[step.stepId] = element;
-                      }}
-                    >
-                      <div className="step-section__header">
-                        <span
-                          className={step.stepId === flashingStepId ? "step-section__index is-flashing" : "step-section__index"}
-                        >
-                          ステップ {step.index}/{currentPhase.steps.length}
-                        </span>
-                        <h3>{step.title}</h3>
-                      </div>
-                      <RenderBlocks blocks={step.contentBlocks} onCopyCode={handleCopyCode} />
-                      <ConfirmChecklist
-                        items={step.confirmItems}
-                        checkedItemIds={checkedItemIds}
-                        onToggle={(confirmItemId) => void handleToggleConfirm(confirmItemId)}
-                        onCopyCode={handleCopyCode}
-                      />
-                    </section>
-                  ))}
-                </article>
+                    {currentPhase.steps.map((step) => (
+                      <section
+                        className={`step-section ${step.stepId === session.currentStepId ? "is-current" : ""}`}
+                        key={step.stepId}
+                        ref={(element) => {
+                          stepRefs.current[step.stepId] = element;
+                        }}
+                      >
+                        <div className="step-section__header">
+                          <span
+                            className={step.stepId === flashingStepId ? "step-section__index is-flashing" : "step-section__index"}
+                          >
+                            ステップ {step.index}/{currentPhase.steps.length}
+                          </span>
+                          <h3>{step.title}</h3>
+                        </div>
+                        <RenderBlocks
+                          blocks={step.contentBlocks}
+                          onCopyCode={handleCopyCode}
+                          onOpenLink={handleOpenManualLink}
+                        />
+                        <ConfirmChecklist
+                          items={step.confirmItems}
+                          checkedItemIds={checkedItemIds}
+                          onToggle={(confirmItemId) => void handleToggleConfirm(confirmItemId)}
+                          onCopyCode={handleCopyCode}
+                          onOpenLink={handleOpenManualLink}
+                        />
+                      </section>
+                    ))}
+                  </article>
+                  {error ? (
+                    <ErrorBanner error={error} inExecutionMain onClose={() => setError(null)} />
+                  ) : null}
+                </div>
               </div>
             </div>
 
@@ -708,11 +780,8 @@ function App() {
         ) : null}
       </main>
 
-      {error ? (
-        <div className="message-banner message-banner--error">
-          <strong>{error.message}</strong>
-          {error.detail ? <span>{error.detail}</span> : null}
-        </div>
+      {error && screen !== "execution" ? (
+        <ErrorBanner error={error} onClose={() => setError(null)} />
       ) : null}
 
       {toast ? <div className="toast">{toast}</div> : null}
