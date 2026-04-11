@@ -45,6 +45,12 @@ npm run dev
 npm run build
 ```
 
+ビルド成果物を削除する場合は、次のコマンドを実行します。
+
+```bash
+npm run clean
+```
+
 必要に応じて配布物も作成できます。
 
 ```bash
