@@ -16,7 +16,7 @@
     "test": "vitest run"
   },
   "build": {
-    "appId": "com.ishiura.workprocnavi",
+    "appId": "net.homeunix.hio.app.workprocnavi",
     "directories": {
       "output": "release"
     },
