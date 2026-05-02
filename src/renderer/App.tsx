@@ -25,6 +25,12 @@ type PendingAction =
       pendingItems: ConfirmItem[];
     };
 
+type LinkHoverPreview = {
+  href: string;
+  x: number;
+  y: number;
+};
+
 function formatDuration(startedAt: string, completedAt: string | null) {
   const start = new Date(startedAt).getTime();
   const end = new Date(completedAt ?? Date.now()).getTime();
@@ -53,6 +59,16 @@ function formatLocalDateTime(value: string | null) {
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
   return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+function getHoveredLinkHrefFromPoint(clientX: number, clientY: number) {
+  const element = document.elementFromPoint(clientX, clientY);
+  if (!(element instanceof HTMLElement)) {
+    return null;
+  }
+
+  const linkElement = element.closest("a");
+  return linkElement instanceof HTMLAnchorElement ? linkElement.getAttribute("href") : null;
 }
 
 function ErrorBanner({
@@ -86,11 +102,14 @@ function ErrorBanner({
 
 function App() {
   const flashTimerRef = useRef<number | null>(null);
+  const linkHoverTimerRef = useRef<number | null>(null);
+  const hoveredLinkHrefRef = useRef<string | null>(null);
   const [screen, setScreen] = useState<Screen>("home");
   const [manual, setManual] = useState<ManualDocument | null>(null);
   const [session, setSession] = useState<SessionData | null>(null);
   const [error, setError] = useState<AppError | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [linkHoverPreview, setLinkHoverPreview] = useState<LinkHoverPreview | null>(null);
   const [completionOutputPath, setCompletionOutputPath] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [flashingStepId, setFlashingStepId] = useState<string | null>(null);
@@ -111,6 +130,9 @@ function App() {
       if (flashTimerRef.current) {
         window.clearTimeout(flashTimerRef.current);
       }
+      if (linkHoverTimerRef.current) {
+        window.clearTimeout(linkHoverTimerRef.current);
+      }
     };
   }, []);
 
@@ -118,6 +140,39 @@ function App() {
     const closeGuardEnabled = screen === "execution" && session?.status === "in_progress";
     void window.workProcNavi.setCloseGuardEnabled(closeGuardEnabled);
   }, [screen, session?.status]);
+
+  useEffect(() => {
+    function handleWindowMouseMove(event: MouseEvent) {
+      const hoveredHref = hoveredLinkHrefRef.current;
+      if (!hoveredHref) {
+        return;
+      }
+
+      if (getHoveredLinkHrefFromPoint(event.clientX, event.clientY) !== hoveredHref) {
+        hideLinkHoverPreview();
+      }
+    }
+
+    function handleWindowMouseOut(event: MouseEvent) {
+      if (!hoveredLinkHrefRef.current) {
+        return;
+      }
+
+      if (event.relatedTarget === null) {
+        hideLinkHoverPreview();
+      }
+    }
+
+    window.addEventListener("mousemove", handleWindowMouseMove);
+    window.addEventListener("mouseout", handleWindowMouseOut);
+    window.addEventListener("blur", hideLinkHoverPreview);
+
+    return () => {
+      window.removeEventListener("mousemove", handleWindowMouseMove);
+      window.removeEventListener("mouseout", handleWindowMouseOut);
+      window.removeEventListener("blur", hideLinkHoverPreview);
+    };
+  }, []);
 
   const checkedItemIds = useMemo(() => new Set(session?.checkedItemIds ?? []), [session]);
   const currentPhase = useMemo(() => {
@@ -255,7 +310,55 @@ function App() {
     }
   }
 
+  function clearLinkHoverTimer() {
+    if (linkHoverTimerRef.current) {
+      window.clearTimeout(linkHoverTimerRef.current);
+      linkHoverTimerRef.current = null;
+    }
+  }
+
+  function toLinkHoverPreview(href: string, rect: DOMRect): LinkHoverPreview {
+    const x = Math.min(window.innerWidth - 24, Math.max(24, rect.left + rect.width / 2));
+    const y = Math.min(window.innerHeight - 24, rect.bottom + 10);
+    return { href, x, y };
+  }
+
+  function hideLinkHoverPreview() {
+    clearLinkHoverTimer();
+    hoveredLinkHrefRef.current = null;
+    setLinkHoverPreview(null);
+  }
+
+  function handleLinkHoverStart(href: string, rect: DOMRect) {
+    hoveredLinkHrefRef.current = href;
+    clearLinkHoverTimer();
+
+    linkHoverTimerRef.current = window.setTimeout(() => {
+      if (hoveredLinkHrefRef.current !== href) {
+        return;
+      }
+
+      setLinkHoverPreview(toLinkHoverPreview(href, rect));
+      linkHoverTimerRef.current = null;
+    }, 500);
+  }
+
+  function handleLinkHoverMove(href: string, rect: DOMRect) {
+    if (hoveredLinkHrefRef.current !== href) {
+      return;
+    }
+
+    setLinkHoverPreview((current) =>
+      current && current.href === href ? toLinkHoverPreview(href, rect) : current,
+    );
+  }
+
+  function handleLinkHoverEnd() {
+    hideLinkHoverPreview();
+  }
+
   async function handleOpenManualLink(href: string) {
+    hideLinkHoverPreview();
     try {
       const result = await window.workProcNavi.openManualLink({ href });
       if (!result.ok) {
@@ -596,6 +699,9 @@ function App() {
                   blocks={manual.overviewBlocks}
                   onCopyCode={handleCopyCode}
                   onOpenLink={handleOpenManualLink}
+                  onLinkHoverStart={handleLinkHoverStart}
+                  onLinkHoverMove={handleLinkHoverMove}
+                  onLinkHoverEnd={handleLinkHoverEnd}
                 />
               </div>
 
@@ -662,6 +768,9 @@ function App() {
                       blocks={currentPhase.introBlocks}
                       onCopyCode={handleCopyCode}
                       onOpenLink={handleOpenManualLink}
+                      onLinkHoverStart={handleLinkHoverStart}
+                      onLinkHoverMove={handleLinkHoverMove}
+                      onLinkHoverEnd={handleLinkHoverEnd}
                     />
 
                     {currentPhase.steps.map((step) => (
@@ -684,6 +793,9 @@ function App() {
                           blocks={step.contentBlocks}
                           onCopyCode={handleCopyCode}
                           onOpenLink={handleOpenManualLink}
+                          onLinkHoverStart={handleLinkHoverStart}
+                          onLinkHoverMove={handleLinkHoverMove}
+                          onLinkHoverEnd={handleLinkHoverEnd}
                         />
                         <ConfirmChecklist
                           items={step.confirmItems}
@@ -691,6 +803,9 @@ function App() {
                           onToggle={(confirmItemId) => void handleToggleConfirm(confirmItemId)}
                           onCopyCode={handleCopyCode}
                           onOpenLink={handleOpenManualLink}
+                          onLinkHoverStart={handleLinkHoverStart}
+                          onLinkHoverMove={handleLinkHoverMove}
+                          onLinkHoverEnd={handleLinkHoverEnd}
                         />
                       </section>
                     ))}
@@ -789,6 +904,15 @@ function App() {
       ) : null}
 
       {toast ? <div className="toast">{toast}</div> : null}
+
+      {linkHoverPreview ? (
+        <div
+          className="link-hover-preview"
+          style={{ left: `${linkHoverPreview.x}px`, top: `${linkHoverPreview.y}px` }}
+        >
+          {linkHoverPreview.href}
+        </div>
+      ) : null}
 
       {pendingAction ? (
         <div className="modal-backdrop" role="presentation">

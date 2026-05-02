@@ -4,9 +4,28 @@ type RenderBlocksProps = {
   blocks: RenderBlock[];
   onCopyCode: (code: string) => void;
   onOpenLink: (href: string) => void;
+  onLinkHoverStart: (href: string, rect: DOMRect) => void;
+  onLinkHoverMove: (href: string, rect: DOMRect) => void;
+  onLinkHoverEnd: () => void;
 };
 
-export function RenderBlocks({ blocks, onCopyCode, onOpenLink }: RenderBlocksProps) {
+function getLinkElement(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) {
+    return null;
+  }
+
+  const linkElement = target.closest("a");
+  return linkElement instanceof HTMLAnchorElement ? linkElement : null;
+}
+
+export function RenderBlocks({
+  blocks,
+  onCopyCode,
+  onOpenLink,
+  onLinkHoverStart,
+  onLinkHoverMove,
+  onLinkHoverEnd,
+}: RenderBlocksProps) {
   function handleBlockClick(event: React.MouseEvent<HTMLDivElement>) {
     const target = event.target;
     if (!(target instanceof HTMLElement)) {
@@ -37,8 +56,51 @@ export function RenderBlocks({ blocks, onCopyCode, onOpenLink }: RenderBlocksPro
     void onCopyCode(codeText);
   }
 
+  function handleBlockMouseOver(event: React.MouseEvent<HTMLDivElement>) {
+    const linkElement = getLinkElement(event.target);
+    if (!linkElement || linkElement === getLinkElement(event.relatedTarget)) {
+      return;
+    }
+
+    const href = linkElement.getAttribute("href");
+    if (!href) {
+      return;
+    }
+
+    onLinkHoverStart(href, linkElement.getBoundingClientRect());
+  }
+
+  function handleBlockMouseMove(event: React.MouseEvent<HTMLDivElement>) {
+    const linkElement = getLinkElement(event.target);
+    if (!linkElement) {
+      return;
+    }
+
+    const href = linkElement.getAttribute("href");
+    if (!href) {
+      return;
+    }
+
+    onLinkHoverMove(href, linkElement.getBoundingClientRect());
+  }
+
+  function handleBlockMouseOut(event: React.MouseEvent<HTMLDivElement>) {
+    const linkElement = getLinkElement(event.target);
+    if (!linkElement || linkElement === getLinkElement(event.relatedTarget)) {
+      return;
+    }
+
+    onLinkHoverEnd();
+  }
+
   return (
-    <div className="render-blocks" onClick={handleBlockClick}>
+    <div
+      className="render-blocks"
+      onClick={handleBlockClick}
+      onMouseMove={handleBlockMouseMove}
+      onMouseOut={handleBlockMouseOut}
+      onMouseOver={handleBlockMouseOver}
+    >
       {blocks.map((block, index) => {
         const key = `${block.type}-${index}`;
 

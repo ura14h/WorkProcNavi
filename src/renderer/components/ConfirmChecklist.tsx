@@ -6,7 +6,19 @@ type ConfirmChecklistProps = {
   onToggle: (confirmItemId: string) => void;
   onCopyCode: (code: string) => void;
   onOpenLink: (href: string) => void;
+  onLinkHoverStart: (href: string, rect: DOMRect) => void;
+  onLinkHoverMove: (href: string, rect: DOMRect) => void;
+  onLinkHoverEnd: () => void;
 };
+
+function getLinkElement(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) {
+    return null;
+  }
+
+  const linkElement = target.closest("a");
+  return linkElement instanceof HTMLAnchorElement ? linkElement : null;
+}
 
 export function ConfirmChecklist({
   items,
@@ -14,6 +26,9 @@ export function ConfirmChecklist({
   onToggle,
   onCopyCode,
   onOpenLink,
+  onLinkHoverStart,
+  onLinkHoverMove,
+  onLinkHoverEnd,
 }: ConfirmChecklistProps) {
   function handleChecklistClick(event: React.MouseEvent<HTMLUListElement>) {
     const target = event.target;
@@ -42,8 +57,51 @@ export function ConfirmChecklist({
     void onCopyCode(codeElement.textContent ?? "");
   }
 
+  function handleChecklistMouseOver(event: React.MouseEvent<HTMLUListElement>) {
+    const linkElement = getLinkElement(event.target);
+    if (!linkElement || linkElement === getLinkElement(event.relatedTarget)) {
+      return;
+    }
+
+    const href = linkElement.getAttribute("href");
+    if (!href) {
+      return;
+    }
+
+    onLinkHoverStart(href, linkElement.getBoundingClientRect());
+  }
+
+  function handleChecklistMouseMove(event: React.MouseEvent<HTMLUListElement>) {
+    const linkElement = getLinkElement(event.target);
+    if (!linkElement) {
+      return;
+    }
+
+    const href = linkElement.getAttribute("href");
+    if (!href) {
+      return;
+    }
+
+    onLinkHoverMove(href, linkElement.getBoundingClientRect());
+  }
+
+  function handleChecklistMouseOut(event: React.MouseEvent<HTMLUListElement>) {
+    const linkElement = getLinkElement(event.target);
+    if (!linkElement || linkElement === getLinkElement(event.relatedTarget)) {
+      return;
+    }
+
+    onLinkHoverEnd();
+  }
+
   return (
-    <ul className="confirm-checklist" onClick={handleChecklistClick}>
+    <ul
+      className="confirm-checklist"
+      onClick={handleChecklistClick}
+      onMouseMove={handleChecklistMouseMove}
+      onMouseOut={handleChecklistMouseOut}
+      onMouseOver={handleChecklistMouseOver}
+    >
       {items.map((item) => {
         const checked = checkedItemIds.has(item.confirmItemId);
         return (
