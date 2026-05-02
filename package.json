@@ -54,7 +54,7 @@
         }
       ],
       "artifactName": "${productName}-${version}-win-portable-${arch}.${ext}",
-      "signAndEditExecutable": false
+      "signAndEditExecutable": true
     }
   },
   "dependencies": {
