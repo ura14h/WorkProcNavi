@@ -2,7 +2,6 @@
 node_modules/
 
 # build outputs
-build/
 dist/
 dist-electron/
 release/
