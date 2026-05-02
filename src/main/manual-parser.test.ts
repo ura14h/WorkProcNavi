@@ -21,7 +21,7 @@ describe("parseManualDocument", () => {
     expect(manual.title).toBe("WorkProcNavi 機能確認手順（Markdown 単体版）");
     expect(manual.totals.phaseCount).toBe(3);
     expect(manual.totals.stepCount).toBe(7);
-    expect(manual.totals.confirmItemCount).toBe(22);
+    expect(manual.totals.confirmItemCount).toBe(24);
     expect(manual.phases[1]?.steps[0]?.contentBlocks.some((block) => block.type === "code")).toBe(true);
   });
 

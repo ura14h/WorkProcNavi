@@ -12,7 +12,7 @@ type StatFn = (targetPath: string) => Promise<StatLike>;
 export type ResolvedManualLinkTarget =
   | { kind: "externalUrl"; url: string }
   | { kind: "fileDirectory"; path: string }
-  | { kind: "fileItem"; path: string };
+  | { kind: "fileItem"; path: string; exists: boolean; parentDirectoryPath: string };
 
 export type ResolveManualLinkTargetResult =
   | { ok: true; target: ResolvedManualLinkTarget }
@@ -121,6 +121,28 @@ export async function resolveManualLinkTarget(
   try {
     fileStat = await stat(targetPath);
   } catch {
+    if (!url.pathname.endsWith("/")) {
+      const parentPath = path.dirname(targetPath);
+      if (parentPath !== targetPath) {
+        try {
+          const parentStat = await stat(parentPath);
+          if (parentStat.isDirectory()) {
+            return {
+              ok: true,
+              target: {
+                kind: "fileItem",
+                path: targetPath,
+                exists: false,
+                parentDirectoryPath: parentPath,
+              },
+            };
+          }
+        } catch {
+          // Fall through to the not-found error below.
+        }
+      }
+    }
+
     return {
       ok: false,
       error: targetNotFoundError(),
@@ -132,6 +154,12 @@ export async function resolveManualLinkTarget(
     target: {
       kind: fileStat.isDirectory() ? "fileDirectory" : "fileItem",
       path: targetPath,
+      ...(fileStat.isDirectory()
+        ? {}
+        : {
+            exists: true,
+            parentDirectoryPath: path.dirname(targetPath),
+          }),
     },
   };
 }

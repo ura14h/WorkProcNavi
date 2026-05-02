@@ -259,6 +259,10 @@ function App() {
     try {
       const result = await window.workProcNavi.openManualLink({ href });
       if (!result.ok) {
+        if (result.error.code === "LINK_OPEN_CANCELLED") {
+          setError(null);
+          return;
+        }
         setError(result.error);
         return;
       }

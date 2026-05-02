@@ -50,16 +50,20 @@ echo "WorkProcNavi copy test"
 
 外部サイト URL は [Example Domain](https://example.com/) を使って確認する。
 
-`file://` の確認では、検証環境に存在するフォルダとファイルを使用する。以下は形式確認用の例であり、存在しない場合は検証環境のパスへ置き換えてから確認する。
+`file://` の確認では、フォルダリンクは実在する場所を使う。ファイルリンクは、対象ファイルが存在する場合と存在しない場合の両方を確認する。
 
 - macOS / Linux フォルダ例: [一時フォルダ](file:///tmp)
 - macOS / Linux ファイル例: [一時ファイル](file:///tmp/workprocnavi-link-open-sample.txt)
+- macOS / Linux 未存在ファイル例: [存在しない一時ファイル](file:///tmp/workprocnavi-link-open-missing-sample.txt)
 - Windows フォルダ例: [一時フォルダ](file:///C:/Temp)
 - Windows ファイル例: [一時ファイル](file:///C:/Temp/workprocnavi-link-open-sample.txt)
+- Windows 未存在ファイル例: [存在しない一時ファイル](file:///C:/Temp/workprocnavi-link-open-missing-sample.txt)
 
 - [ ] 外部サイト URL をクリックすると、アプリ内ではなく既定の外部ブラウザで開く
 - [ ] `file://` フォルダリンクをクリックすると、標準ファイルエクスプローラまたは Finder でフォルダが開く
 - [ ] `file://` ファイルリンクをクリックしてもファイル本体は直接開かず、親フォルダ内で対象ファイルが表示される
+- [ ] 存在しない `file://` ファイルリンクをクリックすると、ファイルが見つからない旨と親フォルダを開くかの確認が表示される
+- [ ] 上記確認で続行すると、対象ファイルは開かず親フォルダだけが開く
 - [ ] リンクを開いてもフェーズ位置、チェック状態、画面表示は維持される
 
 ## 保存・再開・完了確認

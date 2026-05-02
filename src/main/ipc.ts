@@ -52,7 +52,7 @@ export function registerIpcHandlers(
   });
 
   ipcMain.handle("workprocnavi:openManualLink", async (_event, input: OpenManualLinkInput) => {
-    return openManualLink(input);
+    return openManualLink(input, BrowserWindow.fromWebContents(_event.sender));
   });
 
   ipcMain.handle("workprocnavi:revealPath", async (_event, path: string) => {

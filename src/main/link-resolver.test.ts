@@ -51,8 +51,53 @@ describe("resolveManualLinkTarget", () => {
 
     expect(result).toEqual({
       ok: true,
-      target: { kind: "fileItem", path: "/tmp/workprocnavi-sample.txt" },
+      target: {
+        kind: "fileItem",
+        path: "/tmp/workprocnavi-sample.txt",
+        exists: true,
+        parentDirectoryPath: "/tmp",
+      },
     });
+  });
+
+  it("treats missing file URLs as revealable when the parent directory exists", async () => {
+    const result = await resolveManualLinkTarget("file:///tmp/workprocnavi-sample.txt", {
+      platform: "darwin",
+      stat: async (targetPath) => {
+        if (targetPath === "/tmp") {
+          return { isDirectory: () => true };
+        }
+        throw new Error("missing");
+      },
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      target: {
+        kind: "fileItem",
+        path: "/tmp/workprocnavi-sample.txt",
+        exists: false,
+        parentDirectoryPath: "/tmp",
+      },
+    });
+  });
+
+  it("rejects missing directory targets even when their parent exists", async () => {
+    const result = await resolveManualLinkTarget("file:///tmp/workprocnavi-missing-dir/", {
+      platform: "darwin",
+      stat: async (targetPath) => {
+        if (targetPath === "/tmp") {
+          return { isDirectory: () => true };
+        }
+        throw new Error("missing");
+      },
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("LINK_TARGET_NOT_FOUND");
+      expect(result.error.detail).toBeUndefined();
+    }
   });
 
   it("rejects unsupported protocols", async () => {
