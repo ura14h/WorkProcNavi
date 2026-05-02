@@ -458,7 +458,7 @@ type OpenManualLinkResult =
 ```json
 {
   "sessionId": "session-20260404-001",
-  "appVersion": "0.1.0",
+  "appVersion": "1.2.0",
   "manualId": "sample-proc-001",
   "sourcePath": "/path/to/sample-proc-001.zip",
   "sourceType": "zip",

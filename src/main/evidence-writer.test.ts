@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createEvidenceMarkdown } from "./evidence-writer";
+import { APP_VERSION } from "../shared/constants";
 import type { ManualDocument, SessionData } from "../shared/types";
 
 const manual: ManualDocument = {
@@ -54,7 +55,7 @@ const manual: ManualDocument = {
 
 const session: SessionData = {
   sessionId: "session-1",
-  appVersion: "0.1.0",
+  appVersion: APP_VERSION,
   manualId: "sample",
   sourcePath: "/tmp/sample.md",
   sourceType: "markdown",

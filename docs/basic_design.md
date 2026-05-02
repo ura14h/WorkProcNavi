@@ -343,7 +343,7 @@ sample-proc-001.session
 ```json
 {
   "sessionId": "session-1712202000000",
-  "appVersion": "0.1.0",
+  "appVersion": "1.2.0",
   "manualId": "sample-proc-001",
   "sourcePath": "/path/to/sample-proc-001.zip",
   "sourceType": "zip",
