@@ -58,10 +58,14 @@ npm run clean
 必要に応じて配布物も作成できます。
 
 ```bash
+npm run dist
+npm run dist:all
 npm run dist:mac
 npm run dist:win
 ```
 
+`npm run dist` は `npm run dist:all` のショートカットです。
+`npm run dist:all` は 1 回のビルド結果から Mac 版 ZIP と Windows 版 EXE/ZIP をまとめて生成します。
 `npm run dist:win` はポータブル版の `WorkProcNavi.exe` を生成し、その EXE を同名で含む ZIP を作成します。
 
 ## Usage
